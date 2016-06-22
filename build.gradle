@@ -1,0 +1,16 @@
+plugins {
+    id 'idea'
+    id 'org.spongepowered.plugin' version '0.5.2'
+}
+
+group 'flavor.pie'
+version '1.0-SNAPSHOT'
+
+idea {
+    module {
+        downloadJavadoc = true
+    }
+}
+dependencies {
+    compile 'org.spongepowered:spongeapi:4.1.0'
+}
