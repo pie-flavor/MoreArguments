@@ -25,6 +25,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.*;
 import java.util.Iterator;
 import java.util.List;
@@ -112,8 +114,14 @@ public class MoreArguments {
     public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function) {
         return new SuppliedChoicesCommandElement(key, function, (src) -> function.apply(src).keySet().size() < 5);
     }
+    public static CommandElement bigDecimal(Text key) {
+        return new BigDecimalElement(key);
+    }
     public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function, boolean showChoicesInUsage) {
         return new SuppliedChoicesCommandElement(key, function, (src) -> showChoicesInUsage);
+    }
+    public static CommandElement bigInteger(Text key) {
+        return new BigIntegerElement(key);
     }
     private static class IpElement extends CommandElement {
         boolean self;
@@ -231,6 +239,50 @@ public class MoreArguments {
             } else {
                 return super.getUsage(commander);
             }
+        }
+    }
+    private static class BigDecimalElement extends CommandElement {
+
+        protected BigDecimalElement(@Nullable Text key) {
+            super(key);
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            String next = args.next();
+            try {
+                return new BigDecimal(next);
+            } catch (NumberFormatException ex) {
+                throw args.createError(Text.of("Expected a number, but input "+next+" was not"));
+            }
+        }
+
+        @Override
+        public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
+            return ImmutableList.of();
+        }
+    }
+    private static class BigIntegerElement extends CommandElement {
+
+        protected BigIntegerElement(@Nullable Text key) {
+            super(key);
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            String integerString = args.next();
+            try {
+                return new BigInteger(integerString);
+            } catch (NumberFormatException ex) {
+                throw args.createError(Text.of("Expected an integer, but input "+integerString+" was not"));
+            }
+        }
+
+        @Override
+        public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
+            return ImmutableList.of();
         }
     }
 }
