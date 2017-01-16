@@ -5,18 +5,16 @@ import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import org.apache.commons.lang3.NotImplementedException;
 import org.spongepowered.api.command.CommandMessageFormatting;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.ArgumentParseException;
-import org.spongepowered.api.command.args.CommandArgs;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.args.CommandElement;
+import org.spongepowered.api.command.args.*;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.resourcepack.ResourcePack;
 import org.spongepowered.api.resourcepack.ResourcePacks;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextParseException;
+import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.GuavaCollectors;
 import org.spongepowered.api.util.StartsWithPredicate;
 
@@ -28,9 +26,16 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -38,10 +43,12 @@ import static org.spongepowered.api.util.SpongeApiTranslationHelper.t;
 
 public class MoreArguments {
     private MoreArguments() {} //nope
-    public static CommandElement url(Text key) {
+
+        public static CommandElement url(Text key) {
         return new URIElement(key, false);
     }
-    public static CommandElement uri(Text key) {
+
+        public static CommandElement uri(Text key) {
         return new URIElement(key, true);
     }
     private static class URIElement extends CommandElement {
@@ -78,9 +85,11 @@ public class MoreArguments {
             return ImmutableList.of();
         }
     }
-    public static CommandElement resourcePack(Text key) {
+
+        public static CommandElement resourcePack(Text key) {
         return new ResourcePackElement(key);
     }
+
     private static class ResourcePackElement extends URIElement {
         protected ResourcePackElement(@Nullable Text key) {
             super(key, true);
@@ -98,31 +107,38 @@ public class MoreArguments {
             return pack;
         }
     }
-    public static CommandElement ip(Text key) {
+
+        public static CommandElement ip(Text key) {
         return new IpElement(key, false);
     }
-    public static CommandElement ipOrSource(Text key) {
+
+        public static CommandElement ipOrSource(Text key) {
         return new IpElement(key, true);
     }
-    public static CommandElement hoconNode(Text key) {
+
+        public static CommandElement hoconNode(Text key) {
         return new NodeElement(key);
     }
-    public static CommandElement itemStack(Text key, ItemStack mergeWith) {
-        throw new NotImplementedException("Use hoconNode!");
+    /*public static CommandElement itemStack(Text key, ItemStack mergeWith) {
         //return new ItemStackElement(key, mergeWith);
-    }
-    public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function) {
+    }*/
+
+        public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function) {
         return new SuppliedChoicesCommandElement(key, function, (src) -> function.apply(src).keySet().size() < 5);
     }
-    public static CommandElement bigDecimal(Text key) {
+
+        public static CommandElement bigDecimal(Text key) {
         return new BigDecimalElement(key);
     }
-    public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function, boolean showChoicesInUsage) {
+
+        public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function, boolean showChoicesInUsage) {
         return new SuppliedChoicesCommandElement(key, function, (src) -> showChoicesInUsage);
     }
-    public static CommandElement bigInteger(Text key) {
+
+        public static CommandElement bigInteger(Text key) {
         return new BigIntegerElement(key);
     }
+
     private static class IpElement extends CommandElement {
         boolean self;
         protected IpElement(@Nullable Text key, boolean self) {
@@ -158,6 +174,7 @@ public class MoreArguments {
             return src instanceof Player && self ? Text.of("[", super.getUsage(src), "]") : super.getUsage(src);
         }
     }
+
     private static class NodeElement extends CommandElement {
         protected NodeElement(@Nullable Text key) {
             super(key);
@@ -195,6 +212,7 @@ public class MoreArguments {
             }
         }
     }
+
     private static class SuppliedChoicesCommandElement extends CommandElement {
         private final Function<CommandSource, Map<String, Object>> choices;
         private final Predicate<CommandSource> choicesInUsage;
@@ -283,6 +301,224 @@ public class MoreArguments {
         @Override
         public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
             return ImmutableList.of();
+        }
+    }
+    private static class InventorySlotElement extends CommandElement {
+
+        protected InventorySlotElement(@Nullable Text key) {
+            super(key);
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            String arg = args.next();
+            String[] split = arg.split("\\.");
+            ArgumentParseException ex = args.createError(Text.of("Invalid slot!"));
+            if (!split[0].equals("slot")) throw ex;
+            switch (split[1]) {
+                case "armor":
+                    switch (split[2]) {
+                        case "chest":
+
+                    }
+            }
+            return null;
+        }
+
+        @Override
+        public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
+            return null;
+        }
+
+        @Override
+        public Text getUsage(CommandSource src) {
+            return null;
+        }
+    }
+        public static CommandElement uuid(Text key) {
+        return new UUIDElement(key);
+    }
+
+    private static class UUIDElement extends KeyElement {
+
+        protected UUIDElement(Text key) {
+            super(key);
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            try {
+                return UUID.fromString(args.next());
+            } catch (IllegalArgumentException ex) {
+                throw args.createError(Text.of("Invalid UUID!"));
+            }
+        }
+
+    }
+
+        public static CommandElement text(Text key, boolean complex, boolean allRemaining) {
+        return new TextCommandElement(key, complex, allRemaining);
+    }
+
+    private static class RemainingJoinedStringsCommandElement extends KeyElement {
+        private final boolean raw;
+
+        RemainingJoinedStringsCommandElement(Text key, boolean raw) {
+            super(key);
+            this.raw = raw;
+        }
+
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            if (this.raw) {
+                args.next();
+                String ret = args.getRaw().substring(args.getRawPosition());
+                while (args.hasNext()) { // Consume remaining args
+                    args.next();
+                }
+                return ret;
+            } else {
+                final StringBuilder ret = new StringBuilder(args.next());
+                while (args.hasNext()) {
+                    ret.append(' ').append(args.next());
+                }
+                return ret.toString();
+            }
+        }
+
+        @Override
+        public Text getUsage(CommandSource src) {
+            return Text.of(CommandMessageFormatting.LT_TEXT, getKey(), CommandMessageFormatting.ELLIPSIS_TEXT, CommandMessageFormatting.GT_TEXT);
+        }
+    }
+
+    private static class TextCommandElement extends KeyElement {
+
+        private final boolean complex;
+        private final boolean allRemaining;
+        private final RemainingJoinedStringsCommandElement joinedElement;
+
+        protected TextCommandElement(Text key, boolean complex, boolean allRemaining) {
+            super(key);
+            this.complex = complex;
+            this.allRemaining = allRemaining;
+            joinedElement = allRemaining ? new RemainingJoinedStringsCommandElement(key, false) : null;
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            String arg = this.allRemaining ? (String) joinedElement.parseValue(source, args) : args.next();
+            if (this.complex) {
+                try {
+                    return TextSerializers.JSON.deserialize(arg);
+                } catch (TextParseException ex) {
+                    throw args.createError(Text.of("Invalid JSON text: ", ex.getMessage()));
+                }
+            } else {
+                return TextSerializers.FORMATTING_CODE.deserialize(arg);
+            }
+        }
+    }
+
+        public static CommandElement dateTime(Text key) {
+        return new DateTimeElement(key, false);
+    }
+
+        public static CommandElement dateTimeOrNow(Text key) {
+        return new DateTimeElement(key, true);
+    }
+
+    private static class DateTimeElement extends CommandElement {
+
+        private final boolean returnNow;
+
+        protected DateTimeElement(Text key, boolean returnNow) {
+            super(key);
+            this.returnNow = returnNow;
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            if (!args.hasNext() && this.returnNow) {
+                return LocalDateTime.now();
+            }
+            Object state = args.getState();
+            String date = args.next();
+            try {
+                return LocalDateTime.parse(date);
+            } catch (DateTimeParseException ex) {
+                try {
+                    return LocalDateTime.of(LocalDate.now(), LocalTime.parse(date));
+                } catch (DateTimeParseException ex2) {
+                    try {
+                        return LocalDateTime.of(LocalDate.parse(date), LocalTime.MIDNIGHT);
+                    } catch (DateTimeParseException ex3) {
+                        if (this.returnNow) {
+                            args.setState(state);
+                            return LocalDateTime.now();
+                        }
+                        throw args.createError(Text.of("Invalid date-time!"));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
+            String date = LocalDateTime.now().withNano(0).toString();
+            if (date.startsWith(args.nextIfPresent().orElse(""))) {
+                return ImmutableList.of(date);
+            } else {
+                return ImmutableList.of();
+            }
+        }
+
+        @Override
+        public Text getUsage(CommandSource src) {
+            if (!this.returnNow) {
+                return super.getUsage(src);
+            } else {
+                return Text.of("[", this.getKey(), "]");
+            }
+        }
+    }
+
+        public static CommandElement duration(Text key) {
+        return new DurationElement(key);
+    }
+
+    private static class DurationElement extends KeyElement {
+
+        protected DurationElement(Text key) {
+            super(key);
+        }
+
+        @Nullable
+        @Override
+        protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
+            String s = args.next();
+            if (!s.startsWith("P") && !s.startsWith("p")) {
+                s = "p" + s;
+            }
+            try {
+                return Duration.parse(s);
+            } catch (DateTimeParseException ex) {
+                throw args.createError(Text.of("Invalid duration!"));
+            }
+        }
+    }
+    private abstract static class KeyElement extends CommandElement {
+        private KeyElement(Text key) {
+            super(key);
+        }
+
+        @Override
+        public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
+            return Collections.emptyList();
         }
     }
 }
