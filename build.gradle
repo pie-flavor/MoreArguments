@@ -1,16 +1,16 @@
 plugins {
-    id 'idea'
-    id 'org.spongepowered.plugin' version '0.6'
+    id 'java'
 }
 
 group 'flavor.pie'
 version '1.0-SNAPSHOT'
 
-idea {
-    module {
-        downloadJavadoc = true
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://repo.spongepowered.org/maven/'
     }
 }
 dependencies {
-    compile 'org.spongepowered:spongeapi:5.0.0-SNAPSHOT'
+    compileOnly 'org.spongepowered:spongeapi:5.0.0'
 }
