@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven'
 }
 
 group 'flavor.pie'
@@ -12,5 +13,5 @@ repositories {
     }
 }
 dependencies {
-    compile 'org.spongepowered:spongeapi:5.0.0'
+    compileOnly 'org.spongepowered:spongeapi:5.0.0'
 }
