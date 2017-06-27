@@ -42,21 +42,26 @@ import java.util.function.Predicate;
 import static org.spongepowered.api.util.SpongeApiTranslationHelper.t;
 
 public class MoreArguments {
+
     private MoreArguments() {} //nope
 
-        public static CommandElement url(Text key) {
+    public static CommandElement url(Text key) {
         return new URIElement(key, false);
     }
 
-        public static CommandElement uri(Text key) {
+    public static CommandElement uri(Text key) {
         return new URIElement(key, true);
     }
+
     private static class URIElement extends CommandElement {
+
         private final boolean returnURI;
+
         protected URIElement(@Nullable Text key, boolean returnURI) {
             super(key);
             this.returnURI = returnURI;
         }
+
         @Nullable
         @Override
         protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
@@ -86,7 +91,7 @@ public class MoreArguments {
         }
     }
 
-        public static CommandElement resourcePack(Text key) {
+    public static CommandElement resourcePack(Text key) {
         return new ResourcePackElement(key);
     }
 
@@ -108,44 +113,49 @@ public class MoreArguments {
         }
     }
 
-        public static CommandElement ip(Text key) {
+    public static CommandElement ip(Text key) {
         return new IpElement(key, false);
     }
 
-        public static CommandElement ipOrSource(Text key) {
+    public static CommandElement ipOrSource(Text key) {
         return new IpElement(key, true);
     }
 
-        public static CommandElement hoconNode(Text key) {
+    public static CommandElement hoconNode(Text key) {
         return new NodeElement(key);
     }
-    /*public static CommandElement itemStack(Text key, ItemStack mergeWith) {
-        //return new ItemStackElement(key, mergeWith);
-    }*/
 
-        public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function) {
+//    public static CommandElement itemStack(Text key, ItemStack mergeWith) {
+//        return new ItemStackElement(key, mergeWith);
+//    }
+
+    public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function) {
         return new SuppliedChoicesCommandElement(key, function, (src) -> function.apply(src).keySet().size() < 5);
     }
 
-        public static CommandElement bigDecimal(Text key) {
+    public static CommandElement bigDecimal(Text key) {
         return new BigDecimalElement(key);
     }
 
-        public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function, boolean showChoicesInUsage) {
+    public static CommandElement choices(Text key, Function<CommandSource, Map<String, Object>> function, boolean showChoicesInUsage) {
         return new SuppliedChoicesCommandElement(key, function, (src) -> showChoicesInUsage);
     }
 
-        public static CommandElement bigInteger(Text key) {
+    public static CommandElement bigInteger(Text key) {
         return new BigIntegerElement(key);
     }
 
     private static class IpElement extends CommandElement {
+
         boolean self;
+
         protected IpElement(@Nullable Text key, boolean self) {
             super(key);
             this.self = self;
         }
-        @Nullable @Override
+
+        @Nullable
+        @Override
         protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
             if (!args.hasNext() && self)
                 if (source instanceof Player)
@@ -165,10 +175,12 @@ public class MoreArguments {
                 throw args.createError(Text.of("Invalid IP address!"));
             }
         }
+
         @Override
         public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
             return ImmutableList.of();
         }
+
         @Override
         public Text getUsage(CommandSource src) {
             return src instanceof Player && self ? Text.of("[", super.getUsage(src), "]") : super.getUsage(src);
@@ -176,9 +188,11 @@ public class MoreArguments {
     }
 
     private static class NodeElement extends CommandElement {
+
         protected NodeElement(@Nullable Text key) {
             super(key);
         }
+
         @Nullable
         @Override
         protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
@@ -193,15 +207,19 @@ public class MoreArguments {
                 throw args.createError(Text.of("Node parsing failed: "+e.getMessage()));
             }
         }
+
         @Override
         public List<String> complete(CommandSource src, CommandArgs args, CommandContext context) {
             return ImmutableList.of();
         }
     }
+
     private static class ItemStackElement extends NodeElement {
+
         protected ItemStackElement(@Nullable Text key, ItemStack mergeWith) {
             super(key/*, ((Supplier<ConfigurationNode>) () -> {try {return HoconConfigurationLoader.builder().build().createEmptyNode().setValue(TypeToken.of(ItemStack.class), mergeWith);} catch (ObjectMappingException e) {throw new IllegalArgumentException();}}).get()*/);
         }
+
         @Nullable @Override
         public Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
             ConfigurationNode node = (ConfigurationNode) super.parseValue(source, args);
@@ -214,6 +232,7 @@ public class MoreArguments {
     }
 
     private static class SuppliedChoicesCommandElement extends CommandElement {
+
         private final Function<CommandSource, Map<String, Object>> choices;
         private final Predicate<CommandSource> choicesInUsage;
 
@@ -259,6 +278,7 @@ public class MoreArguments {
             }
         }
     }
+
     private static class BigDecimalElement extends CommandElement {
 
         protected BigDecimalElement(@Nullable Text key) {
@@ -281,6 +301,7 @@ public class MoreArguments {
             return ImmutableList.of();
         }
     }
+
     private static class BigIntegerElement extends CommandElement {
 
         protected BigIntegerElement(@Nullable Text key) {
@@ -303,6 +324,7 @@ public class MoreArguments {
             return ImmutableList.of();
         }
     }
+
     private static class InventorySlotElement extends CommandElement {
 
         protected InventorySlotElement(@Nullable Text key) {
@@ -336,7 +358,8 @@ public class MoreArguments {
             return null;
         }
     }
-        public static CommandElement uuid(Text key) {
+
+    public static CommandElement uuid(Text key) {
         return new UUIDElement(key);
     }
 
@@ -358,11 +381,12 @@ public class MoreArguments {
 
     }
 
-        public static CommandElement text(Text key, boolean complex, boolean allRemaining) {
+    public static CommandElement text(Text key, boolean complex, boolean allRemaining) {
         return new TextCommandElement(key, complex, allRemaining);
     }
 
     private static class RemainingJoinedStringsCommandElement extends KeyElement {
+
         private final boolean raw;
 
         RemainingJoinedStringsCommandElement(Text key, boolean raw) {
@@ -423,11 +447,11 @@ public class MoreArguments {
         }
     }
 
-        public static CommandElement dateTime(Text key) {
+    public static CommandElement dateTime(Text key) {
         return new DateTimeElement(key, false);
     }
 
-        public static CommandElement dateTimeOrNow(Text key) {
+    public static CommandElement dateTimeOrNow(Text key) {
         return new DateTimeElement(key, true);
     }
 
@@ -487,7 +511,7 @@ public class MoreArguments {
         }
     }
 
-        public static CommandElement duration(Text key) {
+    public static CommandElement duration(Text key) {
         return new DurationElement(key);
     }
 
@@ -512,6 +536,7 @@ public class MoreArguments {
         }
     }
     private abstract static class KeyElement extends CommandElement {
+
         private KeyElement(Text key) {
             super(key);
         }
