@@ -524,9 +524,18 @@ public class MoreArguments {
         @Nullable
         @Override
         protected Object parseValue(CommandSource source, CommandArgs args) throws ArgumentParseException {
-            String s = args.next();
-            if (!s.startsWith("P") && !s.startsWith("p")) {
-                s = "p" + s;
+            String s = args.next().toUpperCase();
+            if (!s.contains("T")) {
+                if (s.contains("D")) {
+                    if (s.contains("H") || s.contains("M") || s.contains("S")) {
+                        s = s.replace("D", "DT");
+                    }
+                } else {
+                    s = "T" + s;
+                }
+            }
+            if (!s.startsWith("P")) {
+                s = "P" + s;
             }
             try {
                 return Duration.parse(s);
@@ -535,6 +544,7 @@ public class MoreArguments {
             }
         }
     }
+
     private abstract static class KeyElement extends CommandElement {
 
         private KeyElement(Text key) {
